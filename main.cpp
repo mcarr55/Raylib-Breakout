@@ -8,6 +8,8 @@ namespace Constants {
     constexpr float playerHorSpeed{ 350.0f };
     constexpr int blockWidth{80};
     constexpr int blockHeight{20};
+    constexpr int numBlocks{32};
+
 
 
     constexpr float blockHorizontalOffset{ 82.5f };
@@ -57,6 +59,27 @@ void updatePlayer(ScreenState* currentScreen, Player* player, float deltaTime);
 
 void updateBall(ScreenState* currentScreen, Ball* ball, float deltaTime, Block* blocks, Player* player);
 
+void resetGameAfterLife(Player* player, Ball* ball);
+
+int score = 0;
+
+int highScore = 0;
+
+int numBlocksDestroyed = 0;
+
+int lives = 3;
+
+bool startGame = false;
+
+bool gameOver = false;
+
+float elaspedTime = 0.0f;
+
+float timeSinceStart = 0.0f;
+
+bool leaveTitleScreen = false;
+
+
 
 int main(){
 
@@ -65,9 +88,10 @@ int main(){
     const int screenWidth = 800;
     const int screenHeight = 450;
 
+   
     InitWindow(screenWidth, screenHeight, "test");
 
-    ScreenState currentScreen = SCREEN_TEST;
+    ScreenState currentScreen = SCREEN_TITLE;
 
     Player player = { 0 };
     player.position = (Vector2){ 400, 400 };
@@ -82,11 +106,11 @@ int main(){
     Vector2 prevBallPos = ball.position;
 
 
-    //8*4 = 32 blocks
-    Block blockItems[32];
+    //8 block per row, with 4 row = 32 blocks
+    Block blockItems[Constants::numBlocks];
 
 
-    for (int i = 0; i < 32; i++) {
+    for (int i = 0; i < Constants::numBlocks; i++) {
         blockItems[i] = {{ 60.0f +(Constants::blockHorizontalOffset * (i % 8) ), ( 60.0f + (Constants::blockVerticalOffset * (i / 8))), Constants::blockWidth, Constants::blockHeight}, 1, GRAY };
         blockItems[i].blocking = 1;     
     }
@@ -108,63 +132,189 @@ int main(){
 
 
 
+    startGame = false;
+
+
+
     // Main game loop
     while (!WindowShouldClose()){   // Detect window close button or ESC key
-        
 
-        //update
-        float deltaTime = GetFrameTime();
+        switch (currentScreen){
 
+            case SCREEN_TEST:{
 
-        if (deltaTime > 0.25f) deltaTime = 0.25f; // Cap spike to avoid death spiral
-        accumulator += deltaTime;
+            } break;
 
 
-        while (accumulator >= Constants::FIXED_TIMESTEP) {
+            case SCREEN_TITLE: {
 
-            prevBallPos = ball.position;
-            
-            updateBall(&currentScreen, &ball, Constants::FIXED_TIMESTEP, blockItems, &player);
+                //update
 
-            updatePlayer(&currentScreen, &player, Constants::FIXED_TIMESTEP);
+                //switch to enxt screen after enough time
+                if (leaveTitleScreen == true) {
 
+                
 
-            accumulator -= Constants::FIXED_TIMESTEP;
-        }
+                    timeSinceStart += GetFrameTime()*10;
+                }
 
-       
-    
-        //draw
-        BeginDrawing();
+                if (timeSinceStart >= 10.0f) {
 
-            ClearBackground(RAYWHITE);
+                    currentScreen = SCREEN_GAMEPLAY;
+                }
 
-            DrawText("test window", 190, 200, 20, LIGHTGRAY);
+                //indicate button is pressed
+                if (IsKeyPressed(KEY_ENTER)) {
 
-            //blocks
-            for (int i = 0; i < 32; i++) {
-
-                if (blockItems[i].blocking == 1){
-
-                    DrawRectangleRec(blockItems[i].rect, blockItems[i].color);
+                    leaveTitleScreen = true;
 
                 }
+
+                //draw
+
+                BeginDrawing();
+
+                    ClearBackground(RAYWHITE);
+
+                    DrawText("Breakout Game", 95, 170, 80, LIGHTGRAY);
+
+                    if( (int(timeSinceStart) % 2) == 0) {
+
+                        DrawText("Press Enter to Start", 300, 250, 20, LIGHTGRAY);
+                    }
+
+            } break;
+            
+
+            case SCREEN_GAMEPLAY: {
+
+                        //update
+                float deltaTime = GetFrameTime();
+
+                if (startGame == false) {
+
+                    elaspedTime += deltaTime;
+
+                    if (elaspedTime >= 3.0f){
+
+                        startGame = true;
+
+                    }
+                }
+
+                else {
+
+                    //accumulator logic for fixed timestep
+                    if (deltaTime > 0.25f) deltaTime = 0.25f; // Cap spike to avoid death spiral
+                    accumulator += deltaTime;
+                
+
+                    while (accumulator >= Constants::FIXED_TIMESTEP) {
+
+                        prevBallPos = ball.position;
+                        
+                        updateBall(&currentScreen, &ball, Constants::FIXED_TIMESTEP, blockItems, &player);
+
+                        updatePlayer(&currentScreen, &player, Constants::FIXED_TIMESTEP);
+
+
+                        accumulator -= Constants::FIXED_TIMESTEP;
+                    }
+
+
+                }
+                
+
+            
+
+
+
+            
+            
+            
+                //draw
+                BeginDrawing();
+
+                    ClearBackground(RAYWHITE);
+
+                    //blocks
+                    for (int i = 0; i < Constants::numBlocks; i++) {
+
+                        if (blockItems[i].blocking == 1){
+
+                            DrawRectangleRec(blockItems[i].rect, blockItems[i].color);
+
+                        }
+                    }
+
+                    //player
+
+                    Rectangle playerRect = { player.position.x - 52.5f, player.position.y - 15.0f, 100.0f, 15.0f };
+                    DrawRectangleRec(playerRect, RED);
+
+                    DrawCircleV(player.position, 5.0f, GOLD);
+
+                    //Ball
+                    DrawCircleV(ball.position, ball.radius, BLUE);
+
+                    DrawText(TextFormat("Score: %d", score), 10, 10, 20, BLACK);
+                    DrawText(TextFormat("High Score: %d", highScore), 10, 30, 20, BLACK);
+                    DrawText(TextFormat("Lives: %d", lives), 700, 10, 20, BLACK);
+
+                    DrawFPS(700, 30);
+
+                    if (startGame == false) {
+
+                        if (elaspedTime >= 3.0f) {
+
+                            DrawText("Start", 400, 200, 40, BLACK);
+                        
+                        }
+
+                        else if (elaspedTime >= 2.0f) {
+
+                            DrawText("1", 400, 200, 40, BLACK);
+                        
+                        }
+
+                        else if (elaspedTime >= 1.0f) {
+                        
+                            DrawText("2", 400, 200, 40, BLACK);
+                        }
+
+
+                        else if (elaspedTime >= 0.0f) {
+
+                            DrawText("3", 400, 200, 40, BLACK);
+                        
+                        }
+
+                }
+
+
+
+                } break;
+                
+
+                case SCREEN_END: {
+
+                } break;
+
+
+                default:
+                    break;
             }
 
-            //player
+            
 
-            Rectangle playerRect = { player.position.x - 52.5f, player.position.y - 15.0f, 100.0f, 15.0f };
-            DrawRectangleRec(playerRect, RED);
+        
 
-            DrawCircleV(player.position, 5.0f, GOLD);
 
-            //Ball
-            DrawCircleV(ball.position, ball.radius, BLUE);
 
-            DrawFPS(10, 10);
 
-        EndDrawing();
-    }
+
+            EndDrawing();
+        }
 
 }
 
@@ -173,15 +323,23 @@ void updatePlayer(ScreenState* currentScreen, Player* player, float deltaTime){
 
     switch (*currentScreen){
 
-        case SCREEN_TEST:{
+        case SCREEN_GAMEPLAY:{
 
-            if (IsKeyDown(KEY_LEFT)){
-
-               player->position.x -= player -> speed * deltaTime ;
+            if (IsKeyDown(KEY_LEFT)) {
+                player->position.x -= player->speed * deltaTime;
             }
 
-            if (IsKeyDown(KEY_RIGHT)){
-               player->position.x += player -> speed * deltaTime;
+            if (IsKeyDown(KEY_RIGHT)) {
+                player->position.x += player->speed * deltaTime;
+            }
+
+            //prevent them from corossing sreeen border
+            if (player->position.x - 52.5f < 0.0f) {
+                player->position.x = 52.5f; 
+            }
+
+            if (player->position.x + 52.5f > 800.0f) {
+                player->position.x = 800.0f - 52.5f;
             }
 
         } break;
@@ -192,13 +350,7 @@ void updatePlayer(ScreenState* currentScreen, Player* player, float deltaTime){
 
 
         } break;
-           
 
-        case SCREEN_GAMEPLAY: {
-
-
-
-        } break;
            
 
         case SCREEN_END: {
@@ -215,14 +367,14 @@ void updatePlayer(ScreenState* currentScreen, Player* player, float deltaTime){
 
 void updateBall(ScreenState* currentScreen, Ball* ball, float deltaTime, Block* blocks, Player* player){
     switch (*currentScreen){
-        case SCREEN_TEST:{
+        case SCREEN_GAMEPLAY:{
            
             //move ball
             ball->position.x += ball->x_speed * deltaTime;
             ball->position.y += ball->y_speed * deltaTime;
 
             // collision with blocks
-            for (int i = 0; i < 32; i++) {
+            for (int i = 0; i < Constants::numBlocks; i++) {
                 if (blocks[i].blocking == 0) continue;
 
                 // define block bounds
@@ -238,6 +390,13 @@ void updateBall(ScreenState* currentScreen, Ball* ball, float deltaTime, Block* 
                     ball->position.y - ball->radius <= blockBottom) {
 
                     blocks[i].blocking = 0;
+
+                    numBlocksDestroyed++;
+
+                    score += 1000*numBlocksDestroyed;
+                    if (score > highScore) {
+                        highScore = score;
+                    }
 
                     // calculate overlap depths on both axes
                     float overlapLeft = (ball->position.x + ball->radius) - blockLeft;
@@ -293,10 +452,11 @@ void updateBall(ScreenState* currentScreen, Ball* ball, float deltaTime, Block* 
                 float relativeHit = (ball->position.x - player->position.x) / 52.5f;
                 float bounceAngle = relativeHit * 75.0f;
 
-                ball->x_speed = 335.0f * sin(bounceAngle * (PI / 180.0f));
+                ball->x_speed = 350.0f * sin(bounceAngle * (PI / 180.0f));
 
-                // force y_speed negative so it ALWAYS travels upwards (-Y)
-                ball->y_speed = -abs(335.0f * cos(bounceAngle * (PI / 180.0f)));
+                // force y_speed negative so it always travels upwards (-Y)
+                ball->y_speed = -abs(350.0f * cos(bounceAngle * (PI / 180.0f)));
+
             }
 
             //screen edge collision
@@ -316,12 +476,57 @@ void updateBall(ScreenState* currentScreen, Ball* ball, float deltaTime, Block* 
 
             //falling off the bottom edge
             else if (ball->position.y + ball->radius >= 450) {
-                ball->y_speed = -abs(ball->y_speed);
-                ball->position.y = 450 - ball->radius;
+
+                resetGameAfterLife(player, ball);
+                
             }
 
         } break;
         default:
             break;
     }
+}
+
+void resetGame(Player* player, Ball* ball, Block* blocks) {
+    // Reset player position
+    player->position = (Vector2){ 400, 400 };
+
+    // Reset ball position and speed
+    ball->position = (Vector2){ 400, 300 };
+    ball->x_speed = 300;
+    ball->y_speed = -300;
+
+    // Reset blocks
+    for (int i = 0; i < Constants::numBlocks; i++) {
+        blocks[i] = { { 60.0f + (Constants::blockHorizontalOffset * (i % 8)), 
+                        60.0f + (Constants::blockVerticalOffset * (i / 8)), 
+                        Constants::blockWidth, 
+                        Constants::blockHeight }, 
+                      1, GRAY };
+    }
+
+    // Reset score and lives
+    score = 0;
+    numBlocksDestroyed = 0;
+    lives = 3;
+}
+
+void resetGameAfterLife(Player* player, Ball* ball) {
+
+    score = score / 2;
+
+    elaspedTime = 0.0f;
+
+    // Reset player position
+    player->position = (Vector2){ 400, 400 };
+
+    // Reset ball position and speed
+    ball->position = (Vector2){ 400, 300 };
+    ball->x_speed = 300;
+    ball->y_speed = -300;
+
+    // Decrease lives
+    lives--;
+
+    startGame = false;
 }
