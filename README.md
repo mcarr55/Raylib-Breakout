@@ -1,6 +1,6 @@
 # Raylib Breakout
 
-This is a recreation of the 1976 Atari game Breakout, made in C++ using the raylib library.
+This is a very simple recreation of the 1976 Atari game Breakout, made in C++ using the raylib library.
 
 You have 3 lives to knock out all the bricks and go for a high score.
 
