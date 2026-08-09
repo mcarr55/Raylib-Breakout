@@ -1,4 +1,4 @@
-# Raylib Pong
+# Raylib Breakout
 
 This is a recreation of the 1976 Atari game Breakout, made in C++ using the raylib library.
 
