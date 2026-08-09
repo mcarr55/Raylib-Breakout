@@ -29,7 +29,7 @@ namespace Constants {
 //----------------------------------------------------------------------------------
 
 //enums for each screen state
-typedef enum ScreenState { SCREEN_TEST, SCREEN_TITLE, SCREEN_GAMEPLAY, SCREEN_END } ScreenState;
+typedef enum ScreenState { SCREEN_TEST, SCREEN_TITLE, SCREEN_GAMEPLAY, SCREEN_END} ScreenState;
 
 typedef struct Player {
     Vector2 position;
@@ -79,6 +79,10 @@ float timeSinceStart = 0.0f;
 
 bool leaveTitleScreen = false;
 
+ ScreenState currentScreen = SCREEN_TITLE;
+
+int comboCounter = 0;
+
 
 
 int main(){
@@ -91,7 +95,7 @@ int main(){
    
     InitWindow(screenWidth, screenHeight, "test");
 
-    ScreenState currentScreen = SCREEN_TITLE;
+   
 
     Player player = { 0 };
     player.position = (Vector2){ 400, 400 };
@@ -182,11 +186,16 @@ int main(){
 
                         DrawText("Press Enter to Start", 300, 250, 20, LIGHTGRAY);
                     }
+                
+                EndDrawing();
+                
 
             } break;
             
 
             case SCREEN_GAMEPLAY: {
+
+                leaveTitleScreen = false;
 
                         //update
                 float deltaTime = GetFrameTime();
@@ -224,6 +233,11 @@ int main(){
 
                 }
                 
+                    if (numBlocksDestroyed == Constants::numBlocks) {
+       
+                        currentScreen = SCREEN_END;
+                        
+                    }
 
             
 
@@ -252,16 +266,18 @@ int main(){
                     Rectangle playerRect = { player.position.x - 52.5f, player.position.y - 15.0f, 100.0f, 15.0f };
                     DrawRectangleRec(playerRect, RED);
 
-                    DrawCircleV(player.position, 5.0f, GOLD);
-
                     //Ball
                     DrawCircleV(ball.position, ball.radius, BLUE);
 
                     DrawText(TextFormat("Score: %d", score), 10, 10, 20, BLACK);
                     DrawText(TextFormat("High Score: %d", highScore), 10, 30, 20, BLACK);
                     DrawText(TextFormat("Lives: %d", lives), 700, 10, 20, BLACK);
+                    DrawText(TextFormat("Combo: %d", comboCounter), 700, 30, 20, BLACK);
 
-                    DrawFPS(700, 30);
+                    DrawFPS(700, 50);
+
+                    cout << "number of blocks destroyed: " << numBlocksDestroyed << endl;
+
 
                     if (startGame == false) {
 
@@ -287,9 +303,10 @@ int main(){
 
                             DrawText("3", 400, 200, 40, BLACK);
                         
-                        }
+                        }    
+                    }
 
-                }
+                EndDrawing();
 
 
 
@@ -297,6 +314,21 @@ int main(){
                 
 
                 case SCREEN_END: {
+            
+                    //update
+
+
+                    //draw
+                    BeginDrawing();
+                    
+                        ClearBackground(RAYWHITE);
+
+                        DrawText("Game Over", 300, 200, 40, BLACK);
+                        DrawText(TextFormat("Final Score: %d", score), 300, 250, 20, BLACK);
+                        DrawText(TextFormat("High Score: %d", highScore), 300, 280, 20, BLACK);
+
+
+                    EndDrawing();
 
                 } break;
 
@@ -313,7 +345,7 @@ int main(){
 
 
 
-            EndDrawing();
+            
         }
 
 }
@@ -353,9 +385,7 @@ void updatePlayer(ScreenState* currentScreen, Player* player, float deltaTime){
 
            
 
-        case SCREEN_END: {
 
-        } break;
 
 
         default:
@@ -367,6 +397,7 @@ void updatePlayer(ScreenState* currentScreen, Player* player, float deltaTime){
 
 void updateBall(ScreenState* currentScreen, Ball* ball, float deltaTime, Block* blocks, Player* player){
     switch (*currentScreen){
+
         case SCREEN_GAMEPLAY:{
            
             //move ball
@@ -393,7 +424,9 @@ void updateBall(ScreenState* currentScreen, Ball* ball, float deltaTime, Block* 
 
                     numBlocksDestroyed++;
 
-                    score += 1000*numBlocksDestroyed;
+                    comboCounter++;
+
+                    score += 1000*comboCounter + 1;
                     if (score > highScore) {
                         highScore = score;
                     }
@@ -457,6 +490,12 @@ void updateBall(ScreenState* currentScreen, Ball* ball, float deltaTime, Block* 
                 // force y_speed negative so it always travels upwards (-Y)
                 ball->y_speed = -abs(350.0f * cos(bounceAngle * (PI / 180.0f)));
 
+                if (abs(ball-> y_speed) < 200.0f) {
+                    ball->y_speed = -200.0f;
+                }
+
+                comboCounter = 0;
+
             }
 
             //screen edge collision
@@ -517,6 +556,18 @@ void resetGameAfterLife(Player* player, Ball* ball) {
 
     elaspedTime = 0.0f;
 
+    comboCounter = 0;
+
+    // Decrease lives
+    lives--;
+
+
+      if (lives <= 0) {
+        // Game over logic
+        gameOver = true;
+        currentScreen = SCREEN_END;
+    }
+
     // Reset player position
     player->position = (Vector2){ 400, 400 };
 
@@ -525,8 +576,10 @@ void resetGameAfterLife(Player* player, Ball* ball) {
     ball->x_speed = 300;
     ball->y_speed = -300;
 
-    // Decrease lives
-    lives--;
+
+  
+
 
     startGame = false;
+
 }
