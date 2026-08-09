@@ -79,7 +79,7 @@ float timeSinceStart = 0.0f;
 
 bool leaveTitleScreen = false;
 
- ScreenState currentScreen = SCREEN_TITLE;
+ScreenState currentScreen = SCREEN_TITLE;
 
 int comboCounter = 0;
 
@@ -154,10 +154,8 @@ int main(){
 
                 //update
 
-                //switch to enxt screen after enough time
+                //switch to next screen after enough time
                 if (leaveTitleScreen == true) {
-
-                
 
                     timeSinceStart += GetFrameTime()*10;
                 }
@@ -274,9 +272,9 @@ int main(){
                     DrawText(TextFormat("Lives: %d", lives), 700, 10, 20, BLACK);
                     DrawText(TextFormat("Combo: %d", comboCounter), 700, 30, 20, BLACK);
 
-                    DrawFPS(700, 50);
+                    //DrawFPS(700, 50);
 
-                    cout << "number of blocks destroyed: " << numBlocksDestroyed << endl;
+                    //cout << "number of blocks destroyed: " << numBlocksDestroyed << endl;
 
 
                     if (startGame == false) {
