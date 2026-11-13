@@ -5,6 +5,8 @@
 
 struct TitleScreen : GameState{
 
+    using GameState::GameState;
+
     bool leaveTitleScreen;
 
     float timeSinceStart;

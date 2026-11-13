@@ -10,6 +10,7 @@
 #include "game.h"
 #include "gamestate.h"
 #include "titlescreen.h"
+#include "gameplayscreen.h"
 
 #include <cstdlib>
 

@@ -4,6 +4,7 @@
 struct GameState;
 
 
+
 struct Game{
     
     GameState* currentState;
@@ -12,7 +13,7 @@ struct Game{
 
     void runGame();
 
-    void changeState();
+    void changeState(GameState* newState);
 
     Game();
 

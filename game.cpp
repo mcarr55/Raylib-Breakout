@@ -8,10 +8,12 @@ struct GameState;
 #include "titlescreen.h"
 struct TitleScreen;
 
+#include <stdio.h>
+
 
 Game::Game(){
     
-    currentState = new struct TitleScreen();
+    currentState = new struct TitleScreen(this);
 
 }
 
@@ -48,14 +50,23 @@ void Game::runGame(){
 }
 
 
+void Game::changeState(GameState* newState){
 
-/*
+    if (currentState != nullptr){
 
-// Switch to a different subclass:
-delete currentTask;
-currentTask = new LoggingTask();
-currentTask->execute();
+        printf("about to delete current state\n");
 
-delete currentTask; // Clean up
+        delete currentState;
 
-*/
+        printf("deleted state\n");
+
+
+        currentState = nullptr;
+
+    }
+
+    currentState = newState;
+
+    printf("swapped\n");
+
+}

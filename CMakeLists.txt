@@ -30,6 +30,7 @@ add_executable(${PROJECT_NAME}
   titlescreen.cpp
   gamestate.cpp
   game.cpp
+  gameplayscreen.cpp
 )
 
 #set(raylib_VERBOSE 1)

@@ -1,6 +1,14 @@
 #include "titlescreen.h"
 #include "raylib.h"
 
+
+#include "game.h"
+struct Game;
+
+#include "gameplayscreen.h"
+struct GamePlayScreen;
+
+
 TitleScreen::TitleScreen(){
 
     leaveTitleScreen = false;
@@ -18,15 +26,17 @@ void TitleScreen::update(){
         timeSinceStart += GetFrameTime()*10;
     }
 
-    if (timeSinceStart >= 10.0f) {
-
-        //gameInfo -> currentScreen = SCREEN_GAMEPLAY;
-    }
-
     //indicate button is pressed
     if (IsKeyPressed(KEY_ENTER)) {
 
         leaveTitleScreen = true;
+    }
+
+    if (timeSinceStart >= 10.0f) {
+
+        gameParent -> changeState(new struct GamePlayScreen(gameParent));
+
+        return;
     }
 
 }
