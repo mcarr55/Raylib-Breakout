@@ -7,6 +7,12 @@
 #include "ball.h"
 #include "gameInfo.h"
 
+#include "game.h"
+#include "gamestate.h"
+#include "titlescreen.h"
+
+#include <cstdlib>
+
 using namespace std;
 
 //----------------------------------------------------------------------------------
@@ -53,6 +59,19 @@ int main(){
    
     InitWindow(screenWidth, screenHeight, "raylib breakout game");
 
+    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+
+    printf("Running\n");
+
+    //game object
+    Game game;
+
+    game.startGame();
+
+    printf("Done\n");
+
+    std::_Exit(0);
+
     GameInfo gameInfo = {0};
     gameInfo.score = 0;
     gameInfo.highScore = 0;
@@ -83,13 +102,12 @@ int main(){
     //8 block per row, with 4 row = 32 blocks
     Block blockItems[Constants::numBlocks];
 
-
     for (int i = 0; i < Constants::numBlocks; i++) {
         blockItems[i] = {{ 60.0f +(Constants::blockHorizontalOffset * (i % 8) ), ( 60.0f + (Constants::blockVerticalOffset * (i / 8))), Constants::blockWidth, Constants::blockHeight}, 1, GRAY };
         blockItems[i].blocking = 1;     
     }
 
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+    /*
 
     // Main game loop
     while (!WindowShouldClose()){   // Detect window close button or ESC key
@@ -98,6 +116,8 @@ int main(){
 
         draw(&gameInfo, &player, &ball, blockItems);
     }
+
+    */
 
 }
 

@@ -4,6 +4,7 @@
 enum ScreenState : int;
 
 typedef struct GameInfo {
+    
     int score;
 
     int highScore;
